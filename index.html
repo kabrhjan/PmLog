@@ -18,9 +18,10 @@
     under the License.
 -->
 <html>
-    <head>
-        <meta charset="utf-8">
-        <!--
+
+<head>
+    <meta charset="utf-8">
+    <!--
         Customize this policy to fit your own app's needs. For more guidance, see:
             https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
         Some notes:
@@ -29,41 +30,44 @@
             * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
                 * Enable inline JS: add 'unsafe-inline' to default-src
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-        <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="css/index.css">
-        <title>PmLog5</title>
-    </head>
-    <body>
-        <div id="value_out">
-            <h1>PM10: <span id="P1"> </span></h1>
-            <h1>PM2.5: <span id="P2"> </span></h1>
-            <span>N: <span id="L1"> </span></span>
-            <span>E: <span id="L2"> </span></span><br />
-            <span>ACC: <span id="L3"> </span></span><br />
-            <span>COU: <span id="COU"> </span></span>
-            <!--<span>FRQ: <span id="FRQ"> </span></span>
-            <p id="debug_out">...</p>-->
-            <canvas id="graph" height="150"></canvas>
-        </div>
-        
-        <div id="button_send">
-            <button id="btnSend">Click to send file</button>
-        </div>
-        
-        <div class="app">
-            <h1>PmLog v.5</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="css/index.css">
+    <title>PmLog7</title>
+</head>
 
-        <!--skript at je na konci at muze ovladat jiz vytvorene DOM objekty-->
-        <script src="cordova.js"></script>
-        <script src="js/index.js"></script>
-    </body>
+<body>
+    <div id="value_out">
+        <h1>PM10: <span id="P1"> </span></h1>
+        <h1>PM2.5: <span id="P2"> </span></h1>
+        <span>N: <span id="L1"> </span></span>
+        <span>E: <span id="L2"> </span></span><br />
+        <span>ACC: <span id="L3"> </span></span><br />
+        <span>COU: <span id="COU"> </span></span>
+        <!--<span>FRQ: <span id="FRQ"> </span></span>
+            <p id="debug_out">...</p>-->
+        <canvas id="graph" height="150"></canvas>
+    </div>
+
+    <div id="button_send">
+        <button id="btnSend">Click to send file</button>
+    </div>
+
+    <div class="app">
+        <h1>PmLog v.7</h1>
+        <div id="deviceready" class="blink">
+            <p class="event listening">Connecting to Device</p>
+            <p class="event received">Device is Ready</p>
+        </div>
+    </div>
+
+    <!--skript at je na konci at muze ovladat jiz vytvorene DOM objekty-->
+    <script src="cordova.js"></script>
+    <script src="js/index.js"></script>
+</body>
+
 </html>
