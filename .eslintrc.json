@@ -1,0 +1,40 @@
+{
+    "env": {
+        "node": true,
+        "browser": true,
+        "es6": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    
+    "parser": "@babel/eslint-parser ",
+    "plugins": ["@typescript-eslint"],
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "rules": {
+        "quotes": [2, "single"],
+        "jsx-quotes": [2, "prefer-double"],
+
+        "comma-dangle": [2, "never"],
+        "no-console": 0,
+        "valid-jsdoc": [2, {"requireReturn": false }],
+        "no-unused-vars": "off",
+        "indent": ["error", "tab"],
+        "no-undef": "warn",
+        "space-infix-ops": ["error", { "int32Hint": false }],
+        "space-unary-ops": [
+            2, {
+            "words": true,
+            "nonwords": true,
+            "overrides": {
+                "new": true,
+                "++": true
+            }
+        }],
+        "semi": ["error", "always"]
+    }
+}
