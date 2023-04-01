@@ -24,20 +24,63 @@ document.addEventListener('deviceready', onDeviceReady, false);
 function onDeviceReady() {
     // Cordova is now initialized. Have fun!
 
-	//Timeout 20sekund
+	//Timeout 6 sekund
 	setTimeout(function(){
 
 		//console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
-    	document.getElementById('deviceready').classList.add('ready');
-		var L1Text;
-		var L2Text;
-		var L3Text;
+    		document.getElementById('deviceready').classList.add('ready');
+		var P1Text = document.getElementById('P1');
+		var P2Text = document.getElementById('P2');
+		var L1Text = document.getElementById('L1');
+		var L2Text = document.getElementById('L2');
+		var L3Text = document.getElementById('L3');
+		var COUText = document.getElementById('COU');
+		// var FRQText = document.getElementById('FRQ');
+		// FRQText.innerHTML = 30;
+		var btnSave = document.getElementById("btnSave");
+		btnSave.disabled = false
+		var btnSaveDelay = 10
 
-		var zapisovat = false;
+		var permissions = cordova.plugins.permissions;
+		//nastaveni opravneni ke cteni external memory
+		permissions.checkPermission(permissions.READ_EXTERNAL_STORAGE, function( status ){
+			//if ( status.hasPermission ) {
+			if ( status.hasPermission ) {
+				console.log("Has permission to read");
+			}
+			else {
+				console.warn("NO permission to read");
+				permissions.requestPermission(permissions.READ_EXTERNAL_STORAGE, successPermission, errorPermission);
 
-		var fileURL;
+				function errorPermission() {
+					console.warn('Read external memory permission is not turned on');
+				}
 
-    
+				function successPermission( status ) {
+					if( !status.hasPermission ) errorPermission();
+				}
+			}
+		});
+		//nastaveni opravneni ke cteni polohy
+		permissions.checkPermission(permissions.ACCESS_FINE_LOCATION, function( status ){
+			//if ( status.hasPermission ) {
+			if ( status.hasPermission ) {
+				console.log("Has permission to read precise location");
+			}
+			else {
+				console.warn("NO permission to read precise location");
+				permissions.requestPermission(permissions.ACCESS_FINE_LOCATION, successPermission, errorPermission);
+
+				function errorPermission() {
+					console.warn('Read precise location permission is not turned on');
+				}
+
+				function successPermission( status ) {
+					if( !status.hasPermission ) errorPermission();
+				}
+			}
+		});		
+		
 		//zde zacina geolokace
 		var options = {
 			enableHighAccuracy: true,
@@ -66,25 +109,25 @@ function onDeviceReady() {
 		//zde konci geolokace
 		
 		//zde nactu pocatecni datum a cas
-		var currentdate = new Date(); 
+		var currentDate = new Date(); 
 		
 		//zde zacina FILE
 		//FILE: vytvoreni a ulozeni souboru
-		var filename = 'PMLOG ' + currentdate.getFullYear() + '-' + (currentdate.getMonth()+1) + '-' + currentdate.getDate() + '-' + currentdate.getHours() + "-" + currentdate.getMinutes() + "-" + currentdate.getSeconds()+'.csv';
+		var stringCurrentDate = currentDate.getFullYear() + '-' + (currentDate.getMonth()+1) + '-' + currentDate.getDate() + '-' + currentDate.getHours() + "-" + currentDate.getMinutes() + "-" + currentDate.getSeconds()
+		var fileName = stringCurrentDate + '.csv';
 		function onErrorLoadFs(){
-			console.log("pruser s fs");
+			console.log("pruser s fs loading");
 		}
 		function onErrorCreateFile(){
-			console.log("pruser s file");
+			console.log("pruser s file creating");
 		}
 		
 		//FILE: definice zapisove funkce
 		function writeFile(fileEntry, dataObj) {
 			fileEntry.createWriter(function (fileWriter) {
-				fileWriter.onwriteend = function() {
-					//console.log("Successful file write...",dataObj);
-					//readFile(fileEntry);
-				};
+				// fileWriter.onwriteend = function() {
+				// 	//console.log("Successful file write...",dataObj);
+				// };
 				fileWriter.onerror = function (e) {
 					console.log("Failed file write: " + e.toString()+dataObj);
 				};
@@ -103,42 +146,47 @@ function onDeviceReady() {
 		//FILE: prvni zapis hlavicky
 		var outputText= "PM10,PM25,NORTH,EAST,ACCURACY,DAY,MONTH,YEAR,HOUR,MINUTE,SECOND"+'\r\n';
 		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-				fs.root.getFile(filename, { create: true, exclusive: false }, function (fileEntry) {
-						writeFile(fileEntry, outputText);
-						fileURL = fileEntry.toURL();
-				}, onErrorCreateFile);
+			fs.root.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
+				writeFile(fileEntry, outputText);
+			}, onErrorCreateFile);
 		}, onErrorLoadFs);
 		//zde konci FILE
-
+		
 		//zde zacina ovladani odesilaciho knofliku
-		document.getElementById("btnSend").addEventListener("click", send, false);
+		btnSave.addEventListener("click", saveMeasurement, false);
 
-		function send(){
-			console.log(`zmacknuto111`);
+		function saveMeasurement(){
+			//TODO : po odeslani emailu zamknout knoflik alespon na dalsich 60 sekund
+			btnSave.disabled = true
+			btnSaveDelay=0
+
+			if(window.confirm("Save measurement?")){
+				window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+					fs.root.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
+
+						function successCopy(entry) {
+							alert("OK: "+ entry.toURL());
+						}
+
+						function failCopy(error) {
+							console.log(error.code);
+						}
+										
+						var successExternalDataCallback = function(dirData) {
+							console.log('successExternalDataCallback: ' + dirData);
+							fileEntry.copyTo(dirData, 'PMLOG-' + stringCurrentDate + '.csv', successCopy, failCopy);
+						};
+							
+						//file:///storage/emulated/0/
+						window.resolveLocalFileSystemURL("file:///storage/emulated/0/Download", successExternalDataCallback, errorCallback);
+						
+					}, onErrorCreateFile);
+				}, onErrorLoadFs);	
+			};
 		}
 
-		/*
-		document.getElementById('btnSend').addEventListener("click",msg)
+    		//TU POCATEK 1S SMYCKY
 
-		function msg(){
-			console.log("kliknuto")
-		}*/
-
-		//** */
-    		//TU POCATEK
-		//** */
-
-		var P1Text = document.getElementById('P1');
-		var P2Text = document.getElementById('P2');
-		//var debug_out = document.getElementById('debug_out');
-
-		var COUText = document.getElementById('COU');
-
-		var FRQText = document.getElementById('FRQ');
-		FRQText.innerHTML = 30;
-		//var on = document.getElementById('on');
-		//var off = document.getElementById('off');
-		var str = '';
 		var buffer = [];
 		var graph_buffer_p1 = [];
 		var graph_buffer_p2 = [];
@@ -238,7 +286,6 @@ function onDeviceReady() {
 										}
 
 										scaling = (Math.floor(max_p1/100)+1)*100/150;
-										//console.log(max_p1+", "+scaling);
 
 										ctx.strokeStyle = "rgb(200,0,0)";
 										ctx.beginPath();
@@ -258,31 +305,41 @@ function onDeviceReady() {
 									}
 									//konec vykresleni grafu
 
-
 									//counter/pocitadlo
 									var counter = parseInt(COUText.innerText, 10);
-									//frequency/cetnost zaznamu
-									var frequency = parseInt(FRQText.innerText, 10);
+									// //frequency/cetnost zaznamu
+									// var frequency = parseInt(FRQText.innerText, 10);
 									if (isNaN(counter)) {
 										counter = 0;
 									}
+									if (isNaN(btnSaveDelay)) {
+										btnSaveDelay = 10;
+									}
 									counter = counter + 1; //increment
 									COUText.innerText = counter; //save
-									if (counter % frequency == 0) {
-										frequency = frequency * 2; //increment
-										FRQText.innerText = frequency;
-										//event predavajici prumerne udaje na ktery bude listener v arcgis mape a ktery vytvori bod se symbologii dle techto udaju
+									btnSaveDelay = btnSaveDelay + 1 // save into btnSaveDelay
+									if (btnSaveDelay >= 10) {
+										btnSave.disabled = false
+										btnSave.innerHTML = "Click to save file"
+									}else{
+										btnSave.innerHTML = " ...... (" + (10-btnSaveDelay) + "s)"
 									}
+									// if (counter % frequency == 0) {
+									// 	frequency = frequency * 2; //increment
+									// 	FRQText.innerText = frequency;
+									// 	//event predavajici prumerne udaje na ktery bude listener v arcgis mape a ktery vytvori bod se symbologii dle techto udaju
+									// }
 									//zde mohu pomoci kontroly na ruzne delitele frekvence spoustet ruzne casovane skripty
 
 									//opetovne nacteni data
-									currentdate = new Date();
+									currentDate = new Date();
 																			
 									//prubezne nacitani geolokace
 									//zde zacina geolokace
 									var options2 = {
 										enableHighAccuracy: true,
-										timeout: 30000,
+										//timeout: 30000,
+										timeout: 5000,
 										maximumAge: 0,	
 									};
 
@@ -302,74 +359,29 @@ function onDeviceReady() {
 									navigator.geolocation.watchPosition(success2, error2, options2);
 									//zde konci nastaveni prubezneho nacitani geolokace
 
-
-									//zde kontroluji zda neni prazdny vetsinou prvni zaznam
-									if (P1Text.innerHTML==''){
-										//console.log(`zapisovat=false`);
-										zapisovat=false
-									} else {
-										//console.log(`zapisovat=true`);
-										zapisovat=true
-									}
-
 									//zde zacina zapis	
 									var outputText= P1Text.innerHTML+','+
 									P2Text.innerHTML+','+
 									L1Text.innerHTML+','+
 									L2Text.innerHTML+','+
 									L3Text.innerHTML+','+
-									currentdate.getDate()+','+
-									(currentdate.getMonth()+1)+','+
-									currentdate.getFullYear()+','+
-									currentdate.getHours()+','+
-									currentdate.getMinutes()+','+
-									currentdate.getSeconds()+'\r\n';
+									currentDate.getDate()+','+
+									(currentDate.getMonth()+1)+','+
+									currentDate.getFullYear()+','+
+									currentDate.getHours()+','+
+									currentDate.getMinutes()+','+
+									currentDate.getSeconds()+'\r\n';
 
-									//ale zapisuj jen kdyz mas zapisovat
-									if(zapisovat){
+									//ale zapisuj jen kdyz mas zapisovat, tj. kontroluji zda neni prazdny vetsinou prvni zaznam
+									if(P1Text.innerHTML!=''){
 										window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-
-												//console.log('file system open: ' + fs.name);
-												fs.root.getFile(filename, { create: true, exclusive: false }, function (fileEntry) {
-
-														//console.log("fileEntry is file?" + fileEntry.isFile.toString());
-														// fileEntry.name == 'someFile.txt'
-														// fileEntry.fullPath == '/someFile.txt'
-														writeFile(fileEntry, outputText);
-														fileURL = fileEntry.toURL();
-												}, onErrorCreateFile);
-
+											fs.root.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
+													writeFile(fileEntry, outputText);
+											}, onErrorCreateFile);
 										}, onErrorLoadFs);
 									}
 									//zde konci zapis
-									
-									/*if (counter == 60) {
-
-										var uploadSuccess = function (r) {
-											console.log("Successful upload...");
-											console.log("Code = " + r.responseCode);
-											// displayFileData(fileEntry.fullPath + " (content uploaded to server)");
-										}
-
-										var uploadFail = function (error) {
-											console.log("UN-Successful upload!!!");
-											console.log("Code = " + error.responseCode);
-										}
-										var fileUploadOptions = new FileUploadOptions();
-										fileUploadOptions.fileKey = "file";
-										fileUploadOptions.fileName = "POKUS"+currentdate.getDate()+','+
-																			(currentdate.getMonth()+1)+','+
-																			currentdate.getFullYear()+','+
-																			currentdate.getHours()+','+
-																			currentdate.getMinutes()+','+
-																			currentdate.getSeconds()+'.csv';
-										//fileUploadOptions.mimeType = "image/jpeg";
-										options.mimeType = "text/plain";
-										var ft = new FileTransfer();
-										ft.upload(fileURL, "http://cordova.fzp.czu.cz/upload.php",uploadSuccess,uploadFail,fileUploadOptions);
-									}*/
 								},1000); //tu konec 1 sekundoveho timeoutu
-								
 							},errorCallback // error attaching the callback
 						);
 					},
@@ -377,6 +389,5 @@ function onDeviceReady() {
 				);
 			},errorCallback // user does not grant permission
 		);
-    //tu konec 20 sekund timeoutu
-	},20000)
+	},6000)//tu konec 6 sekund timeoutu
 }
