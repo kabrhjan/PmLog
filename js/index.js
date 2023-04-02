@@ -113,8 +113,16 @@ function onDeviceReady() {
 		
 		//zde zacina FILE
 		//FILE: vytvoreni a ulozeni souboru
-		var stringCurrentDate = currentDate.getFullYear() + '-' + (currentDate.getMonth()+1) + '-' + currentDate.getDate() + '-' + currentDate.getHours() + "-" + currentDate.getMinutes() + "-" + currentDate.getSeconds()
-		var fileName = stringCurrentDate + '.csv';
+		function formatDateToString(currentDate){
+			var dd = (currentDate.getDate() < 10 ? '0' : '') + currentDate.getDate();
+			var MM = ((currentDate.getMonth() + 1) < 10 ? '0' : '') + (currentDate.getMonth() + 1);
+			var yyyy = currentDate.getFullYear();
+			var HOU = (currentDate.getHours() < 10 ? '0' : '') + currentDate.getHours();
+			var MIN = (currentDate.getMinutes() < 10 ? '0' : '') + currentDate.getMinutes();
+			var SEC = (currentDate.getSeconds() < 10 ? '0' : '') + currentDate.getSeconds();
+			return yyyy + '-' + MM + '-' + dd + '-' + HOU + "-" + MIN + "-" + SEC
+		}
+		var fileName = formatDateToString(currentDate) + '.csv';
 		function onErrorLoadFs(){
 			console.log("pruser s fs loading");
 		}
@@ -156,7 +164,7 @@ function onDeviceReady() {
 		btnSave.addEventListener("click", saveMeasurement, false);
 
 		function saveMeasurement(){
-			//TODO : po odeslani emailu zamknout knoflik alespon na dalsich 60 sekund
+			//TODO : po ulozeni zamknout knoflik alespon na dalsich 10 sekund
 			btnSave.disabled = true
 			btnSaveDelay=0
 
@@ -174,7 +182,8 @@ function onDeviceReady() {
 										
 						var successExternalDataCallback = function(dirData) {
 							console.log('successExternalDataCallback: ' + dirData);
-							fileEntry.copyTo(dirData, 'PMLOG-' + stringCurrentDate + '.csv', successCopy, failCopy);
+							// save file with current timestamp, not with an old one file is saved in persistent memory 
+							fileEntry.copyTo(dirData, 'PMLOG-' + formatDateToString(new Date()) + '.csv', successCopy, failCopy);
 						};
 							
 						//file:///storage/emulated/0/
