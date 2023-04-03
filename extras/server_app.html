@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<title>PMLOG mapa</title>
+
+	<style>
+		html,
+		body,
+		#viewDiv {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+			background-color: aliceblue;
+		}
+	</style>
+
+	<link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+	<script src="https://js.arcgis.com/4.26/"></script>
+
+	<script>
+		require([
+			"esri/Map",
+			"esri/views/MapView",
+			"esri/layers/CSVLayer",
+			"esri/widgets/Legend",
+			"esri/widgets/Expand",
+			'esri/widgets/BasemapGallery', //prepinatko mezi podkladovymi mapami
+			'esri/widgets/ScaleBar', //meritko
+		],(
+			Map,
+			MapView,
+			CSVLayer,
+			Legend,
+			Expand,
+			BasemapGallery,
+			ScaleBar,
+		) => {
+
+			const defaultSym={
+				type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+				color: [0,0,0,0],
+				outline: {
+					// autocasts as new SimpleLineSymbol()
+					//color: "#71de6e",
+					width: 0
+				}
+			};
+
+			const rendererPM10={
+				type: "simple", // autocasts as new SimpleRenderer()
+				symbol: defaultSym, // the default symbol defined in step 1
+				label: "PM10 concentration μg/m³", // label for the legend
+				visualVariables: [
+					{
+						type: "color", // indicates this is a color visual variable
+						field: "PM10", // total population in poverty
+						//normalizationField: "TOTPOP_CY", // total population
+						stops: [
+							{
+								value: 10, // features where < 10% of the pop in poverty
+								color: "#2b83ba", // will be assigned this color (beige)
+								label: "Good" // label to display in the legend
+							},{
+								value: 25, // features where < 10% of the pop in poverty
+								color: "#abdda4", // will be assigned this color (beige)
+								label: "Moderate" // label to display in the legend
+							},{
+								value: 50, // features where < 10% of the pop in poverty
+								color: "#ffffbf", // will be assigned this color (beige)
+								label: "Unhealthy for sensitive groups" // label to display in the legend
+							},{
+								value: 100, // features where < 10% of the pop in poverty
+								color: "#fdae61", // will be assigned this color (beige)
+								label: "Unhealthy" // label to display in the legend
+							},{
+								value: 200, // features where < 10% of the pop in poverty
+								color: "#d7191c", // will be assigned this color (beige)
+								label: "Hazardous" // label to display in the legend
+							},{
+								value: 500, // features where < 10% of the pop in poverty
+								color: "#6C0BA9", // will be assigned this color (beige)
+								label: "Very Hazardous" // label to display in the legend
+							}
+						]
+					}
+				]
+			};
+
+			let csvLayer;
+
+			let fileInputField;
+			let fileInput=document.getElementById("file-input");
+			fileInput.addEventListener('change',() => {
+				const url=URL.createObjectURL(fileInput.files[0]);
+				csvLayer=new CSVLayer({
+					url: url,
+					latitudeField: 'NORTH',
+					longitudeField: 'EAST',
+					renderer: rendererPM10
+				});
+
+				map.add(csvLayer);
+
+				csvLayer.popupTemplate=popupTemplate;
+				csvLayer.popupTemplate=popupTemplate;
+
+			},false);
+
+			const map=new Map({
+				basemap: "gray-vector",
+				// layers: [csvLayer]
+			});
+
+			const view=new MapView({
+				container: "viewDiv",
+				map: map,
+				zoom: 6,
+				center: [15.5,49.8], //priblizne Cesko
+			});
+
+			//Legend Widget
+			const legendDiv=document.getElementById('legendDiv');
+			const legend=new Expand({
+				content: new Legend({
+					view: view,
+					style: "card"
+				}),
+				container: legendDiv,
+				view: view,
+				expanded: false,
+				layerInfos: [{
+					layer: csvLayer,
+					title: "PM10 μg/m³"
+				}]
+			});
+			view.ui.add(legend,"top-left");
+
+			const gallery=new Expand({
+				//vytvor prepinac na podkladove mapy
+				content: new BasemapGallery({
+					view: view
+				}),
+				container: basemapDiv,
+				view: view,
+				expanded: false
+			});
+			//pridej prepinac na podkladove mapy do pohledu na mapu
+			view.ui.add(gallery,'top-right');
+
+			//vytvor meritko
+			var scaleBar=new ScaleBar({
+				view: view,
+				unit: 'dual', //zobrazi jednak kilometry ale i mile
+			});
+			//pridej meritko do pohledu na mapu
+			view.ui.add(scaleBar,'bottom-left');
+
+			//vytvor vzor popupu (tj. vyskakovaciho okna)
+			var popupTemplate={
+				//autocast jako PopupTemplate(), vložím nadpis
+				title: 'PM10: {PM10}, PM2,5: {PM25}, NORTH: {NORTH}, EAST: {EAST}, ACCURACY: {ACCURACY}, DAY: {DAY}, MONTH: {MONTH}, YEAR: {YEAR}, HOUR: {HOUR}, MINUTE: {MINUTE}, SECOND: {SECOND}',outFields: ['*'],
+			};
+			//vložím obsah, odkaz a obrázek
+			popupTemplate.content=
+				'PM10: {PM10}μg/m³, <br>PM2,5: {PM25}μg/m³, <br>NORTH: {NORTH}°, <br>EAST: {EAST}°, <br>ACCURACY: {ACCURACY}m, <br>DAY: {DAY}, <br>MONTH: {MONTH}, <br>YEAR: {YEAR}, <br>HOUR: {HOUR}, <br>MINUTE: {MINUTE}, <br>SECOND: {SECOND}';
+		});
+	</script>
+</head>
+
+<body>
+	<span>
+		Browse... <input type="file" id="file-input" name="files[]" accept="text/csv">
+	</span>
+	<div id="viewDiv"></div>
+	<div id="legendDiv"></div>
+	<div id="basemapDiv"></div>
+</body>
+
+</html>
