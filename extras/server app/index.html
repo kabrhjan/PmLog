@@ -1,0 +1,44 @@
+<!--serverova strana PM aplikace -->
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<title>PMLOG mapa</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<style>
+		html,
+		body,
+		#viewDiv {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+			background-color: aliceblue;
+		}
+	</style>
+
+	<link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css" />
+	<script src="https://js.arcgis.com/4.26/"></script>
+
+</head>
+
+<body>
+	<span>
+		Browse... <input type="file" id="file-input" name="files[]" accept="text/csv">
+	</span>
+	<span>
+		PM10 <input type="button" id="button-pm10" value="PM 10μg">
+	</span>
+	<span>
+		PM2,5 <input type="button" id="button-pm25" value="PM 2,5μg">
+	</span>
+	<div id="viewDiv"></div>
+	<div id="legendDiv"></div>
+	<div id="basemapDiv"></div>
+
+	<script src="script.js?v=7"></script>
+</body>
+
+</html>
