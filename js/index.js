@@ -41,6 +41,10 @@ function onDeviceReady() {
 		btnSave.disabled = false
 		var btnSaveDelay = 10
 
+		//nastavit at se aplikace neuspava
+		//cordova.plugins.backgroundMode.enable(); // toto nefungovalo
+		cordova.plugins.backgroundMode.setEnabled(true);
+
 		var permissions = cordova.plugins.permissions;
 		//nastaveni opravneni ke cteni external memory
 		permissions.checkPermission(permissions.READ_EXTERNAL_STORAGE, function( status ){
@@ -79,7 +83,7 @@ function onDeviceReady() {
 					if( !status.hasPermission ) errorPermission();
 				}
 			}
-		});		
+		});
 		
 		//zde zacina geolokace
 		var options = {
@@ -91,8 +95,8 @@ function onDeviceReady() {
 		function success(pos) {
 			var crd = pos.coords;
 
-			console.log('Your current position is not:');
-			console.log(`CRD object : ${crd}`);
+			//console.log('Your current position is not:');
+			//console.log(`CRD object : ${crd}`);
 			L1Text = document.getElementById('L1');
 			L2Text = document.getElementById('L2');
 			L3Text = document.getElementById('L3');
@@ -181,7 +185,7 @@ function onDeviceReady() {
 						}
 										
 						var successExternalDataCallback = function(dirData) {
-							console.log('successExternalDataCallback: ' + dirData);
+							//console.log('successExternalDataCallback: ' + dirData);
 							// save file with current timestamp, not with an old one file is saved in persistent memory 
 							fileEntry.copyTo(dirData, 'PMLOG-' + formatDateToString(new Date()) + '.csv', successCopy, failCopy);
 						};
@@ -363,6 +367,11 @@ function onDeviceReady() {
 									function error2(err) {
 										console.warn(`chyba prubezneho nacitani GPS, ERROR(${err.code}): ${err.message}`);
 									}
+
+									// probudit
+									cordova.plugins.backgroundMode.wakeUp();
+									// odemknout // Turn screen on and show app even locked
+									cordova.plugins.backgroundMode.unlock();
 
 									//tady pozor, nenacitam pokazde watch, ze by se postupne navesoval< nestacilo by get?
 									navigator.geolocation.watchPosition(success2, error2, options2);
